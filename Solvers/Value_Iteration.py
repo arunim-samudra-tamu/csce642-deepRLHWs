@@ -67,7 +67,7 @@ class ValueIteration(AbstractSolver):
         for each_state in range(self.env.observation_space.n):
             # Do a one-step lookahead to find the best action
             # Update the value function. Ref: Sutton book eq. 4.10.
-            best_action = np.max(max(self.one_step_lookahead(each_state)))
+            best_action = np.max(self.one_step_lookahead(each_state))
             self.V[each_state] = best_action
 
         # Dont worry about this part
@@ -187,7 +187,15 @@ class AsynchVI(ValueIteration):
         # Choose state with the maximal value change potential  #
         # Do a one-step lookahead to find the best action       #
         # Update the value function. Ref: Sutton book eq. 4.10. #
-        #########################################################
+        state_to_update = self.pq.pop()
+        best_action = np.max(self.one_step_lookahead(state_to_update))
+        self.V[state_to_update] = best_action
+
+        for pred_state in self.pred[state_to_update]:
+            A = self.one_step_lookahead(pred_state)
+            best_action_value = np.max(A)
+            self.pq.update(pred_state, -abs(self.V[pred_state] - best_action_value))
+
 
         # you can ignore this part
         self.statistics[Statistics.Rewards.value] = np.sum(self.V)

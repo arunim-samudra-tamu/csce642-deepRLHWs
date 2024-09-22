@@ -53,6 +53,7 @@ class PolicyIteration(AbstractSolver):
         for s in range(self.env.observation_space.n):
             # Find the best action by one-step lookahead
             # Ties are resolved in favor of actions with lower indexes (Hint: use max/argmax directly).
+            old_action = self.policy[s,:]
 
             ################################
             #   YOUR IMPLEMENTATION HERE   #
@@ -100,9 +101,7 @@ class PolicyIteration(AbstractSolver):
             self.options.gamma: Gamma discount factor.
             np.linalg.solve(a, b) # Won't work with discount factor = 0!
         """
-        ################################
-        #   YOUR IMPLEMENTATION HERE   #
-        ################################
+
 
     def create_greedy_policy(self):
         """
