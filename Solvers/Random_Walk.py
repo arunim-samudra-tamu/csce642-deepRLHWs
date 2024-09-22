@@ -11,8 +11,8 @@ from Solvers.Abstract_Solver import AbstractSolver, Statistics
 
 
 class RandomWalk(AbstractSolver):
-    def __init__(self,env,options):
-        super().__init__(env,options)
+    def __init__(self,env,eval_env,options):
+        super().__init__(env,eval_env,options)
 
     def train_episode(self):
         for t in range(self.options.steps):

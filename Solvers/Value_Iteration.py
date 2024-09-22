@@ -63,14 +63,12 @@ class ValueIteration(AbstractSolver):
         """
 
         # you can add variables here if it is helpful
-
         # Update the estimated value of each state
         for each_state in range(self.env.observation_space.n):
             # Do a one-step lookahead to find the best action
             # Update the value function. Ref: Sutton book eq. 4.10.
-            ################################
-            #   YOUR IMPLEMENTATION HERE   #
-            ################################
+            best_action = np.max(max(self.one_step_lookahead(each_state)))
+            self.V[each_state] = best_action
 
         # Dont worry about this part
         self.statistics[Statistics.Rewards.value] = np.sum(self.V)
@@ -137,10 +135,8 @@ class ValueIteration(AbstractSolver):
             Outputs: (what you need to output)
                 return action as an integer
             """
-            ################################
-            #   YOUR IMPLEMENTATION HERE   #
-            ################################
-            
+            values = self.one_step_lookahead(state)
+            return np.argmax(values)
 
         return policy_fn
 
