@@ -53,11 +53,10 @@ class PolicyIteration(AbstractSolver):
         for s in range(self.env.observation_space.n):
             # Find the best action by one-step lookahead
             # Ties are resolved in favor of actions with lower indexes (Hint: use max/argmax directly).
-            old_action = self.policy[s,:]
+            best_action = np.argmax(self.one_step_lookahead(s))
 
-            ################################
-            #   YOUR IMPLEMENTATION HERE   #
-            ################################
+            self.policy[s] = np.zeros(self.env.action_space.n)
+            self.policy[s][best_action] = 1
 
 
         # In DP methods we don't interact with the environment so we will set the reward to be the sum of state values
@@ -101,7 +100,18 @@ class PolicyIteration(AbstractSolver):
             self.options.gamma: Gamma discount factor.
             np.linalg.solve(a, b) # Won't work with discount factor = 0!
         """
+        num_states = self.env.observation_space.n
+        transition_matrix = np.zeros((num_states, num_states))
+        reward_vector = np.zeros(num_states)
 
+        for s in range(num_states):
+            action = np.argmax(self.policy[s])
+            for prob, next_state, reward, done in self.env.P[s][action]:
+                transition_matrix[s, next_state] += prob
+                reward_vector[s] += prob * reward
+
+        A = np.eye(num_states) - self.options.gamma * transition_matrix
+        self.V = np.linalg.solve(A, reward_vector)
 
     def create_greedy_policy(self):
         """
