@@ -192,6 +192,32 @@ class OffPolicyMC(MonteCarlo):
         ################################
         #   YOUR IMPLEMENTATION HERE   #
         ################################
+        discount_factor = self.options.gamma
+
+        for _ in range(self.options.steps):
+            probs = self.policy(state)
+            action = np.random.choice(np.arange(len(probs)), p=probs)
+
+            next_state, reward, done, _, _ = self.env.step(action)
+
+            episode.append((state, action, reward))
+            if done:
+                break
+            state = next_state
+
+        G, W = 0, 1
+
+        for i in reversed(range(len(episode))):
+            state, action, reward = episode[i]
+            G = reward + discount_factor * G
+
+            self.C[state][action] += W
+            self.Q[state][action] += W / self.C[state][action] * (G - self.Q[state][action])
+            self.target_policy = self.create_greedy_policy()
+            if action != self.target_policy(state):
+                break
+            W = W * 1 / self.behavior_policy(state)[action]
+
 
     def create_random_policy(self):
         """
