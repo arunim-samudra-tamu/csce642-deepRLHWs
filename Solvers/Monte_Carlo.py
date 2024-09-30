@@ -65,6 +65,27 @@ class MonteCarlo(AbstractSolver):
         ################################
         #   YOUR IMPLEMENTATION HERE   #
         ################################
+        for _ in range(self.options.steps):
+            probs = self.policy(state)
+            action = np.random.choice(np.arange(len(probs)), p=probs)
+
+            next_state, reward, done, _, _ = self.env.step(action)
+
+            episode.append((state, action, reward))
+            if done:
+                break
+            state = next_state
+
+        g = 0
+
+        for i in reversed(range(len(episode))):
+            state, action, reward = episode[i]
+            g = reward + discount_factor * g
+
+            if not (state, action) in [(x[0], x[1]) for x in episode[:i]]:
+                self.returns_sum[(state, action)] += g
+                self.returns_count[(state, action)] += 1
+                self.Q[state][action] = self.returns_sum[(state, action)] / self.returns_count[(state, action)]
 
     def __str__(self):
         return "Monte Carlo"
@@ -90,6 +111,13 @@ class MonteCarlo(AbstractSolver):
             ################################
             #   YOUR IMPLEMENTATION HERE   #
             ################################
+            optimal_action = np.argmax(self.Q[observation])
+
+            action_probs = np.zeros(nA, dtype=float) + self.options.epsilon / nA
+            action_probs[optimal_action] += (1.0 - self.options.epsilon)
+
+            return action_probs
+
 
         return policy_fn
 
@@ -109,6 +137,7 @@ class MonteCarlo(AbstractSolver):
             ################################
             #   YOUR IMPLEMENTATION HERE   #
             ################################
+            return np.argmax(self.Q[state])
 
 
         return policy_fn
@@ -163,7 +192,6 @@ class OffPolicyMC(MonteCarlo):
         ################################
         #   YOUR IMPLEMENTATION HERE   #
         ################################
-        
 
     def create_random_policy(self):
         """
