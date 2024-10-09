@@ -47,6 +47,24 @@ class Sarsa(AbstractSolver):
         ################################
         #   YOUR IMPLEMENTATION HERE   #
         ################################
+        done = False
+        steps = 0
+        action = np.random.choice(np.arange(self.env.action_space.n), p=self.epsilon_greedy_action(state))
+
+        while not done and steps < self.options.steps:
+            # Take action
+            next_state, reward, done, _ = self.step(action)
+
+            # Q-learning update
+            next_action = np.random.choice(np.arange(self.env.action_space.n), p=self.epsilon_greedy_action(next_state))
+            td_target = reward + self.options.gamma * self.Q[next_state][next_action]
+            td_delta = td_target - self.Q[state][action]
+            self.Q[state][action] += self.options.alpha * td_delta
+
+            # Move to the next state
+            state = next_state
+            action = next_action
+            steps += 1
 
     def __str__(self):
         return "Sarsa"
@@ -63,6 +81,7 @@ class Sarsa(AbstractSolver):
             ################################
             #   YOUR IMPLEMENTATION HERE   #
             ################################
+            return np.argmax(self.Q[state])
 
         return policy_fn
 
@@ -80,6 +99,14 @@ class Sarsa(AbstractSolver):
         ################################
         #   YOUR IMPLEMENTATION HERE   #
         ################################
+        num_actions = self.env.action_space.n
+
+        action_probabilities = np.ones(num_actions, dtype=float) * (self.options.epsilon / num_actions)
+        best_action = np.argmax(self.Q[state])
+        # Increase the probability of the greedy action by (1 - epsilon)
+        action_probabilities[best_action] += (1.0 - self.options.epsilon)
+
+        return action_probabilities
 
     def plot(self, stats, smoothing_window=20, final=False):
         plotting.plot_episode_stats(stats, smoothing_window, final=final)

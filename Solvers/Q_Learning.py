@@ -54,6 +54,24 @@ class QLearning(AbstractSolver):
         ################################
         #   YOUR IMPLEMENTATION HERE   #
         ################################
+        done = False
+        steps = 0
+
+        while not done and steps < self.options.steps:
+            action = np.random.choice(np.arange(self.env.action_space.n), p=self.epsilon_greedy_action(state))
+
+            # Take action
+            next_state, reward, done, _ = self.step(action)
+
+            # Q-learning update
+            best_next_action = np.argmax(self.Q[next_state])
+            td_target = reward + self.options.gamma * self.Q[next_state][best_next_action]
+            td_delta = td_target - self.Q[state][action]
+            self.Q[state][action] += self.options.alpha * td_delta
+
+            # Move to the next state
+            state = next_state
+            steps += 1
 
     def __str__(self):
         return "Q-Learning"
@@ -75,6 +93,7 @@ class QLearning(AbstractSolver):
             ################################
             #   YOUR IMPLEMENTATION HERE   #
             ################################
+            return np.argmax(self.Q[state])
 
         return policy_fn
 
@@ -92,6 +111,14 @@ class QLearning(AbstractSolver):
         ################################
         #   YOUR IMPLEMENTATION HERE   #
         ################################
+        num_actions = self.env.action_space.n
+
+        action_probabilities = np.ones(num_actions, dtype=float) * (self.options.epsilon / num_actions)
+        best_action = np.argmax(self.Q[state])
+        # Increase the probability of the greedy action by (1 - epsilon)
+        action_probabilities[best_action] += (1.0 - self.options.epsilon)
+
+        return action_probabilities
 
 
 class ApproxQLearning(QLearning):
@@ -154,7 +181,8 @@ class ApproxQLearning(QLearning):
             ################################
             #   YOUR IMPLEMENTATION HERE   #
             ################################
-            
+            return
+
 
         return policy_fn
 
